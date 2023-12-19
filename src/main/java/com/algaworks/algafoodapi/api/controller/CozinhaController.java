@@ -36,6 +36,7 @@ public class CozinhaController {
     @ResponseStatus(HttpStatus.CREATED)
     public Cozinha adicionar(@RequestBody Cozinha cozinha){
         return cozinhaRepository.salvar(cozinha);
+
     }
 
 }
