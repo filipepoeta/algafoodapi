@@ -22,7 +22,6 @@ public class CozinhaController {
         return cozinhaRepository.listar();
     }
 
-
     @GetMapping("/{id}")
     public ResponseEntity<Cozinha> buscar(@PathVariable Long id){
 
