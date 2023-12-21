@@ -2,7 +2,10 @@ package com.algaworks.algafoodapi.api.controller;
 
 import com.algaworks.algafoodapi.domain.model.Cozinha;
 import com.algaworks.algafoodapi.domain.repository.CozinhaRepository;
+import com.algaworks.algafoodapi.domain.service.CozinhaService;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +19,8 @@ public class CozinhaController {
 
     @Autowired
     private CozinhaRepository cozinhaRepository;
+    @Autowired
+    private CozinhaService cozinhaService;
 
     @GetMapping
     public List<Cozinha> listar() {
@@ -34,8 +39,41 @@ public class CozinhaController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Cozinha adicionar(@RequestBody Cozinha cozinha){
-        return cozinhaRepository.salvar(cozinha);
+        return cozinhaService.salvar(cozinha);
 
+    }
+
+    @PutMapping("/{cozinhaId}")
+    public ResponseEntity<Cozinha> atualizar(@PathVariable Long cozinhaId,
+                                             @RequestBody Cozinha cozinha) {
+        Cozinha cozinhaAtual = cozinhaRepository.buscar(cozinhaId);
+
+        if (cozinhaAtual != null) {
+            //cozinhaAtual.setNome(cozinha.getNome());
+            BeanUtils.copyProperties(cozinha, cozinhaAtual, "id");
+
+            cozinhaAtual = cozinhaRepository.salvar(cozinhaAtual);
+            return ResponseEntity.ok(cozinhaAtual);
+        }
+
+        return ResponseEntity.notFound().build();
+    }
+
+    @DeleteMapping("/{cozinhaId}")
+    public ResponseEntity<Void> remover(@PathVariable Long cozinhaId) {
+        try {
+            Cozinha cozinha = cozinhaRepository.buscar(cozinhaId);
+
+            if (cozinha != null) {
+                cozinhaRepository.remover(cozinha);
+
+                return ResponseEntity.noContent().build();
+            }
+
+            return ResponseEntity.notFound().build();
+        } catch (DataIntegrityViolationException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
     }
 
 }
